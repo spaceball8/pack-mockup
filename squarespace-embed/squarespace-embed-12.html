@@ -1,0 +1,250 @@
+<!-- =====================================================================
+     Packaging mockup generator — embed wrapper
+     Paste this whole thing into a Squarespace Code Block (Business plan
+     or higher, since it needs JavaScript and iframes).
+
+     SETUP
+       1. Upload Box_Mockup__bounce.html to a static host
+          (Netlify Drop, Cloudflare Pages, GitHub Pages, Vercel).
+       2. Put its URL in data-src below, replacing YOUR-HOST.
+       3. Optional: change data-min-width to move the breakpoint, or
+          --bmw-height in the CSS to change the frame height.
+
+     TWO THINGS NOT TO CHANGE
+       - Do NOT add a sandbox attribute to the iframe. Sandboxing blocks
+         the PNG and video downloads, which are the point of the tool.
+       - Hosting on a subdomain of your own site (tools.yourdomain.com
+         pointed at the static host) makes downloads same-site and is the
+         first thing to try if the export buttons misbehave.
+
+     While you are logged into Squarespace the block may look empty —
+     that is their security behaviour, not a fault. Use Preview in Safe
+     Mode, or view the published page in a private window.
+     ===================================================================== -->
+
+<div class="bmw"
+     data-src="https://YOUR-HOST.example.com/box-mockup.html"
+     data-min-width="900"
+     data-title="Packaging mockup generator">
+
+  <div class="bmw__stage" data-bmw-stage>
+    <div class="bmw__skeleton" data-bmw-skeleton>
+      <span class="bmw__spinner" aria-hidden="true"></span>
+      <p class="bmw__note">Loading the mockup generator…</p>
+    </div>
+  </div>
+
+  <div class="bmw__small" data-bmw-small hidden>
+    <p class="bmw__title">Best viewed on a larger screen</p>
+    <p class="bmw__note">
+      The generator puts a full control panel beside a 3D view, so it needs a
+      wider window than this one. Open it on a desktop, or launch it in its own
+      tab to try it here.
+    </p>
+    <a class="bmw__btn" data-bmw-open target="_blank" rel="noopener">Open in a new tab</a>
+  </div>
+
+  <p class="bmw__caption" data-bmw-caption hidden>
+    <a data-bmw-open target="_blank" rel="noopener">Open full screen in a new tab</a>
+  </p>
+</div>
+
+<style>
+  .bmw {
+    --bmw-height: clamp(560px, 78vh, 900px);
+    --bmw-fg: #1a1a1a;
+    --bmw-muted: #6b6b6b;
+    --bmw-line: #d8d8d8;
+    --bmw-surface: #f6f6f6;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+  }
+  .bmw *, .bmw *::before, .bmw *::after { box-sizing: inherit; }
+
+  .bmw__stage {
+    position: relative;
+    width: 100%;
+    height: var(--bmw-height);
+    background: var(--bmw-surface);
+    border: 1px solid var(--bmw-line);
+    overflow: hidden;
+  }
+  .bmw__frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .bmw__skeleton {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+    padding: 24px;
+  }
+  .bmw[data-bmw-loaded] .bmw__skeleton { display: none; }
+
+  .bmw__spinner {
+    width: 26px;
+    height: 26px;
+    border: 2px solid var(--bmw-line);
+    border-top-color: var(--bmw-fg);
+    border-radius: 50%;
+    animation: bmw-spin 0.9s linear infinite;
+  }
+  @keyframes bmw-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .bmw__spinner { animation: none; border-top-color: var(--bmw-line); }
+  }
+
+  .bmw__small {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 28px 24px;
+    background: var(--bmw-surface);
+    border: 1px solid var(--bmw-line);
+  }
+  .bmw__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--bmw-fg);
+    line-height: 1.3;
+  }
+  .bmw__note {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--bmw-muted);
+    max-width: 46ch;
+  }
+  .bmw__btn {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 11px 18px;
+    border: 1px solid var(--bmw-fg);
+    background: var(--bmw-fg);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .bmw__btn:hover { opacity: 0.85; }
+
+  .bmw__caption {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--bmw-muted);
+  }
+  .bmw__caption a { color: inherit; text-decoration: underline; }
+</style>
+
+<script>
+(function () {
+  var roots = document.querySelectorAll('.bmw:not([data-bmw-ready])');
+
+  Array.prototype.forEach.call(roots, function (root) {
+    root.setAttribute('data-bmw-ready', '1');
+
+    var src    = root.getAttribute('data-src') || '';
+    var minW   = parseInt(root.getAttribute('data-min-width'), 10) || 900;
+    var title  = root.getAttribute('data-title') || 'Embedded application';
+    var stage  = root.querySelector('[data-bmw-stage]');
+    var small  = root.querySelector('[data-bmw-small]');
+    var skel   = root.querySelector('[data-bmw-skeleton]');
+    var caption= root.querySelector('[data-bmw-caption]');
+    var links  = root.querySelectorAll('[data-bmw-open]');
+    var frame  = null;
+    var observer = null;
+
+    Array.prototype.forEach.call(links, function (a) { a.href = src; });
+
+    // Unconfigured: say so plainly rather than showing a spinner forever.
+    if (!src || src.indexOf('YOUR-HOST') !== -1) {
+      if (skel) {
+        skel.innerHTML =
+          '<p class="bmw__title">Embed not configured</p>' +
+          '<p class="bmw__note">Set data-src on the .bmw element to the URL of your hosted ' +
+          'box-mockup HTML file.</p>';
+      }
+      return;
+    }
+
+    function wideEnough() {
+      var w = root.clientWidth || root.getBoundingClientRect().width || 0;
+      return w >= minW;
+    }
+
+    function mount() {
+      if (frame) return;
+      frame = document.createElement('iframe');
+      frame.className = 'bmw__frame';
+      frame.title = title;
+      // No sandbox attribute: sandboxing blocks the PNG and video downloads.
+      frame.setAttribute('allow', 'fullscreen');
+      frame.setAttribute('allowfullscreen', '');
+      frame.addEventListener('load', function () {
+        root.setAttribute('data-bmw-loaded', '1');
+      });
+      frame.src = src;
+      stage.appendChild(frame);
+      if (caption) caption.hidden = false;
+      if (observer) { observer.disconnect(); observer = null; }
+    }
+
+    // Load only once it is near the viewport, so the ~670 KB payload never
+    // competes with the rest of the page on first paint.
+    function arm() {
+      if (frame || observer) return;
+      if (typeof IntersectionObserver !== 'function') { mount(); return; }
+      observer = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) { mount(); return; }
+        }
+      }, { rootMargin: '400px 0px' });
+      observer.observe(stage);
+    }
+
+    function layout() {
+      // Once mounted, never tear down — unmounting on a resize or an orientation
+      // change would throw away whatever artwork the visitor had loaded.
+      if (frame) {
+        small.hidden = true;
+        stage.hidden = false;
+        return;
+      }
+      var ok = wideEnough();
+      small.hidden = ok;
+      stage.hidden = !ok;
+      if (caption) caption.hidden = true;
+      if (ok) arm();
+    }
+
+    layout();
+
+    if (typeof ResizeObserver === 'function') {
+      // Container width, not window width — the block may sit in a narrow
+      // column on a wide screen.
+      new ResizeObserver(layout).observe(root);
+    } else if (window.addEventListener) {
+      var t = null;
+      window.addEventListener('resize', function () {
+        clearTimeout(t);
+        t = setTimeout(layout, 150);
+      });
+      window.addEventListener('orientationchange', layout);
+    }
+  });
+})();
+</script>
